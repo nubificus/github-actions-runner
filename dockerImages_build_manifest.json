@@ -23,7 +23,7 @@
         },
         {
             "image_filename": "Dockerfile.jetson",
-            "base_filename" : "Dockerfile.gcc-lite-2204",
+            "base_filename" : "Dockerfile.gcc-lite",
 	    "tags": "lite",
             "architecture": ["x86_64", "aarch64"],
             "build_level": 1
