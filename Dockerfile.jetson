@@ -1,31 +1,45 @@
-FROM nubificus_base_build as amd64
+#FROM nubificus_base_build as amd64
+FROM harbor.nbfc.io/nubificus/gh-actions-runner-gcc-lite-2204:final as amd64
 
 USER root
 
-# Install build-essential and update cmake
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends software-properties-common && \
-    add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends gcc-8 g++-8 && \
-    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 --slave /usr/bin/g++ g++ /usr/bin/g++-8 && \
-    apt-get install -y --no-install-recommends build-essential cmake && \
-    apt-get -y clean && \
-    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+#wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+#sudo dpkg -i cuda-keyring_1.1-1_all.deb
+#sudo apt-get update
+#sudo apt-get -
+
+#RUN #sudo #apt-get --purge remove '*cublas*' 'cuda*' 'nsight*' 'nvidia*' && \
+	#sudo apt-get autoremove && \
+RUN wget -q https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin && \
+	sudo mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
+	wget -q https://developer.download.nvidia.com/compute/cuda/12.2.0/local_installers/cuda-repo-ubuntu2204-12-2-local_12.2.0-535.54.03-1_amd64.deb && \
+	sudo dpkg -i cuda-repo-ubuntu2204-12-2-local_12.2.0-535.54.03-1_amd64.deb && \
+	sudo cp /var/cuda-repo-ubuntu2204-12-2-local/cuda-216F19BD-keyring.gpg /usr/share/keyrings/
+	#sudo apt-get update
+	#sudo apt-get -y install cuda && \
 
 
-### Install NVIDIA CUDA, CUDNN and TENSORRT
-ARG OS=ubuntu2004
-RUN wget http://developer.download.nvidia.com/compute/machine-learning/repos/${OS}/x86_64/nvidia-machine-learning-repo-${OS}_1.0.0-1_amd64.deb && \
-	dpkg -i nvidia-machine-learning-repo-${OS}_1.0.0-1_amd64.deb && \
-	apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/machine-learning/repos/${OS}/x86_64/7fa2af80.pub && \
-	wget https://developer.download.nvidia.com/compute/cuda/repos/${OS}/x86_64/cuda-${OS}.pin && \
-	mv cuda-${OS}.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
-	apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/${OS}/x86_64/3bf863cc.pub && \
-	add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/${OS}/x86_64/ /" && \
-	apt-get update && \
-	apt-get install -y libcudnn8 libcudnn8-dev tensorrt nvidia-cuda-toolkit libgstreamer* libglew-dev && \
-	rm -rf /var/cache/apt/archives /var/lib/apt/lists
+RUN wget -q https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
+	sudo dpkg -i cuda-keyring_1.1-1_all.deb && \
+	sudo apt-get update && \
+	sudo apt-get -y install libcudnn8 libcudnn8-dev tensorrt nvidia-cuda-toolkit libgstreamer* libglew-dev
+# echo 'export PATH=/usr/local/cuda-12.2/bin:$PATH' >> ~/.bashrc
+# echo 'export LD_LIBRARY_PATH=/usr/local/cuda-12.2/lib64:$LD_LIBRARY_PATH' >> ~/.bashrc
+# source ~/.bashrc
+
+
+#### Install NVIDIA CUDA, CUDNN and TENSORRT
+#ARG OS=ubuntu2004
+#RUN wget http://developer.download.nvidia.com/compute/machine-learning/repos/${OS}/x86_64/nvidia-machine-learning-repo-${OS}_1.0.0-1_amd64.deb && \
+#	dpkg -i nvidia-machine-learning-repo-${OS}_1.0.0-1_amd64.deb && \
+#	apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/machine-learning/repos/${OS}/x86_64/7fa2af80.pub && \
+#	wget https://developer.download.nvidia.com/compute/cuda/repos/${OS}/x86_64/cuda-${OS}.pin && \
+#	mv cuda-${OS}.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
+#	apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/${OS}/x86_64/3bf863cc.pub && \
+#	add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/${OS}/x86_64/ /" && \
+#	apt-get update && \
+#	apt-get install -y libcudnn8 libcudnn8-dev tensorrt nvidia-cuda-toolkit libgstreamer* libglew-dev && \
+#	rm -rf /var/cache/apt/archives /var/lib/apt/lists
 
 # Install OpenCV
 
@@ -35,12 +49,12 @@ RUN apt-get update && \
   apt-get -y clean && \
   rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Install TensorRT
-
-RUN apt-get update && \
-  apt-get install -y --no-install-recommends libcudnn8 libcudnn8-dev tensorrt nvidia-cuda-toolkit libgstreamer* libglew-dev libnvinfer-lean8 libnvinfer-vc-plugin8 && \
-  apt-get -y clean && \
-  rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+## Install TensorRT
+#
+#RUN apt-get update && \
+#  apt-get install -y --no-install-recommends libcudnn8 libcudnn8-dev tensorrt nvidia-cuda-toolkit libgstreamer* libglew-dev libnvinfer-lean8 libnvinfer-vc-plugin8 && \
+#  apt-get -y clean && \
+#  rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install Python and Numpy
 
