@@ -3,21 +3,21 @@
     [
         {
             "image_filename": "Dockerfile.base-2204",
-	    "tags": "lite",
+	    "tags": "lite,large",
             "architecture": ["x86_64", "aarch64","armv7l"],
             "build_level": 0
         },
         {
             "image_filename": "Dockerfile.gcc-lite-2204",
             "base_filename" : "Dockerfile.base-2204",
-	    "tags": "lite",
+	    "tags": "lite,large",
             "architecture": ["x86_64", "aarch64","armv7l"],
             "build_level": 1
         },
         {
             "image_filename": "Dockerfile.rust",
             "base_filename" : "Dockerfile.gcc-lite-2204",
-	    "tags": "lite",
+	    "tags": "lite,large",
             "architecture": ["x86_64", "aarch64","armv7l"],
             "build_level": 1
         },
@@ -31,25 +31,25 @@
         {
             "image_filename": "Dockerfile.torch",
             "base_filename" : "Dockerfile.gcc-lite-2204",
-	    "tags": "lite",
+	    "tags": "lite,large",
             "architecture": ["x86_64", "aarch64"],
             "build_level": 1
         },
         {
             "image_filename": "Dockerfile.opencv",
             "base_filename" : "Dockerfile.gcc-lite-2204",
-	    "tags": "lite",
+	    "tags": "lite,large",
             "architecture": ["x86_64", "aarch64"],
             "build_level": 1
         },
         {
             "image_filename": "Dockerfile.tensorflow",
             "base_filename" : "Dockerfile.gcc-lite-2204",
-	    "tags": "lite",
+	    "tags": "lite,large",
             "architecture": ["x86_64", "aarch64"],
             "build_level": 1
         }
 
     ],
-    "output_manifest_tag": "final"
+    "output_manifest_tag": "generic"
 }
