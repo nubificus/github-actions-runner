@@ -1,0 +1,78 @@
+FROM nubificus_base_build
+
+# Set environment variable to prevent interactive installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+USER root
+
+# Install apt dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        python3-dev \
+        python3-venv \
+        python3-distutils \
+        python3-pip \
+        python3-numpy \
+        python3-wheel && \
+    apt-get -y clean && \
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+ARG LLVM_VERSION=17
+# Install LLVM
+RUN wget https://apt.llvm.org/llvm.sh && \
+    chmod +x llvm.sh && \
+    sudo ./llvm.sh "${LLVM_VERSION}" && \
+    rm llvm.sh && \
+    apt-get -y clean && \
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+ARG TARGETARCH
+# Install Bazelisk as Bazel
+RUN BAZELISK="bazelisk-linux-${TARGETARCH}" && \
+    VERSION="v1.20.0" && \
+    wget "https://github.com/bazelbuild/bazelisk/releases/download/${VERSION}/${BAZELISK}" && \
+    chmod +x "${BAZELISK}" && \
+    mv "${BAZELISK}" /usr/local/bin/bazel
+
+ARG TF_VERSION=v2.17.0
+# Build and install TensorFlow
+RUN git clone -b "${TF_VERSION}" --recursive --depth 1 \
+        https://github.com/tensorflow/tensorflow.git && \
+    cd tensorflow && \
+    ./configure && \
+    bazel \
+        --host_jvm_args=-Xmx2g \
+        build --jobs=HOST_CPUS*.8 \
+            --local_ram_resources=HOST_RAM*.1 \
+            --config=v2 \
+            --copt=-O3 \
+            --verbose_failures \
+            --discard_analysis_cache \
+            -c opt \
+            //tensorflow:libtensorflow.so \
+            //tensorflow:libtensorflow_cc.so \
+            //tensorflow:libtensorflow_framework.so \
+            //tensorflow:install_headers \
+            --config=monolithic \
+            //tensorflow/lite/c:libtensorflowlite_c.so \
+            //tensorflow/lite:libtensorflowlite.so \
+            //tensorflow/lite/delegates/flex:tensorflowlite_flex && \
+    OUT_DIR=bazel-bin/tensorflow && \
+    rsync -aPm \
+        --exclude='internal' --exclude='testing' --exclude='ios' \
+        --exclude='python' --exclude='java' --exclude='objc' --exclude='swift' \
+        --exclude='*internal*.h' --exclude='*test*.h' \
+        --include='*/' --include='*.h' \
+	--exclude='*' \
+        tensorflow/lite/* "${OUT_DIR}/include/tensorflow/lite" && \
+    PREFIX=/usr/local && \
+    cp -r "${OUT_DIR}"/include "${PREFIX}/" && \
+    find "${OUT_DIR}" -path '*runfiles' -prune -o -name 'libtensorflow*.so*' \
+        -exec cp -a {} "${PREFIX}/lib/" \; && \ 
+    rm -rf "${PREFIX}"/lib/*.params* "${PREFIX}"/lib/*.runfiles* && \
+    rm -rf /root/.cache && \
+    cd .. && rm -rf tensorflow
+
+WORKDIR /home/runner
+USER runner
+ENTRYPOINT ["/entrypoint.sh"]

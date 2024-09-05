@@ -1,16 +1,15 @@
-FROM harbor.nbfc.io/nubificus/gh-actions-runner-base-2204:latest
+FROM nubificus_base_build
 
 # ENV DEBIAN_FRONTEND=noninteractive
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 
-
-
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install base packages.
 USER root
+
 # Set environment variables globally
 RUN echo 'DEBIAN_FRONTEND=noninteractive' >> /etc/environment && \
     echo 'TZ=Etc/UTC' >> /etc/environment
